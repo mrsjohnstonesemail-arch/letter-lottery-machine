@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Letter Lottery Machine</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:"Trebuchet MS",Arial,sans-serif;background:radial-gradient(circle at 50% 0%,#fffdf8,#eef4fb 55%,#e5ecf6);color:#24324a}
+header{text-align:center;padding:18px 12px 6px}
+h1{margin:0;font-size:clamp(2rem,5vw,3.2rem)}
+.sub{margin:5px;color:#5d6b80}
+.controls{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;padding:12px}
+button{font:inherit;font-weight:bold;border:0;border-radius:14px;padding:10px 16px;cursor:pointer;box-shadow:0 3px 8px #0002;background:white}
+button:hover{transform:translateY(-1px)}
+.active{outline:4px solid #8bb8ff;background:#eaf3ff}
+.draw{background:#ffd45c}
+.reset{background:#e8eef8}
+.machine{width:min(1050px,95vw);margin:auto;background:#ffffffdd;border:5px solid #c7d3e6;border-radius:28px;padding:18px 20px 20px;box-shadow:0 10px 28px #0002}
+.cageArea{display:flex;align-items:center;justify-content:center;gap:55px;min-height:350px}
+.cage{width:330px;height:290px;position:relative;border-radius:50%;border:10px solid #718097;background:radial-gradient(circle,#eef3fa 0,#d6deea 40%,#bdc8d8 41%,#e7edf5 43%,#cbd5e2 100%);box-shadow:inset 0 -18px 24px #63738c44,0 10px 18px #0002}
+.cage:before,.cage:after{content:"";position:absolute;border:4px solid #7c8ba0;border-radius:50%}
+.cage:before{inset:10px 20px;transform:rotate(90deg)}
+.cage:after{inset:2px 48px}
+.bar{position:absolute;top:4px;bottom:4px;left:50%;width:4px;background:#7c8ba0;border-radius:10px;transform-origin:center}
+.bar:nth-child(1){transform:translateX(-50%) rotate(0)}
+.bar:nth-child(2){transform:translateX(-50%) rotate(22.5deg)}
+.bar:nth-child(3){transform:translateX(-50%) rotate(45deg)}
+.bar:nth-child(4){transform:translateX(-50%) rotate(67.5deg)}
+.bar:nth-child(5){transform:translateX(-50%) rotate(90deg)}
+.bar:nth-child(6){transform:translateX(-50%) rotate(112.5deg)}
+.bar:nth-child(7){transform:translateX(-50%) rotate(135deg)}
+.bar:nth-child(8){transform:translateX(-50%) rotate(157.5deg)}
+.cage.spinning{animation:spin .9s linear infinite}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.crank{position:absolute;right:-70px;top:100px;width:86px;height:86px;border:10px solid #6f7f96;border-radius:50%;background:#e8eef6;box-shadow:0 4px 8px #0002}
+.crank:before{content:"";position:absolute;width:65px;height:9px;background:#7c8ba0;left:0;top:28px;transform:rotate(-35deg);border-radius:10px}
+.crank:after{content:"";position:absolute;width:20px;height:20px;background:#ffd45c;border:5px solid #6f7f96;border-radius:50%;right:-8px;top:5px}
+.inner{position:absolute;inset:48px 42px 42px;overflow:hidden}
+.mini{position:absolute;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;color:#24324a;background:radial-gradient(circle at 30% 25%,#fff 0 9%,#fff9 10% 18%,#bcd8ff 19% 60%,#82aee9 61%);box-shadow:inset -4px -5px 7px #426fa633,0 3px 6px #0002}
+.lower{background:radial-gradient(circle at 30% 25%,#fff 0 9%,#fff9 10% 18%,#ffd2a5 19% 60%,#f2a55e 61%)}
+.m1{left:5%;top:44%}.m2{left:22%;top:18%}.m3{left:43%;top:53%}.m4{left:62%;top:23%}.m5{left:70%;top:53%}.m6{left:34%;top:70%}.m7{left:55%;top:68%}.m8{left:12%;top:68%}
+.pick{text-align:center}.result{width:150px;height:150px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:6rem;font-weight:900;border:4px solid #6d84a6;background:radial-gradient(circle at 30% 24%,#fff 0 8%,#fff9 9% 17%,#bcd8ff 18% 61%,#75a5e8 62%);box-shadow:inset -12px -16px 20px #426fa633,0 10px 22px #0002;animation:pop .45s ease}
+.result.lower{border-color:#c07b3e;background:radial-gradient(circle at 30% 24%,#fff 0 8%,#fff9 9% 17%,#ffd2a5 18% 61%,#ee9c50 62%)}
+.result.shake{animation:shake .8s ease}
+@keyframes pop{from{transform:scale(.25);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes shake{0%,100%{transform:rotate(0)}20%{transform:rotate(-10deg) translateX(-10px)}40%{transform:rotate(10deg) translateX(10px)}60%{transform:rotate(-7deg) translateX(-6px)}80%{transform:rotate(6deg) translateX(6px)}}
+.prompt{font-size:1.1rem;font-weight:bold;margin-top:10px}
+.pool{display:grid;grid-template-columns:repeat(auto-fit,minmax(44px,1fr));gap:7px;margin-top:6px}
+.poolBall{width:46px;height:46px;margin:auto;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900}
+.blue{background:radial-gradient(circle at 30% 25%,#fff 0 9%,#fff9 10% 18%,#bcd8ff 19% 60%,#82aee9 61%)}
+.orange{background:radial-gradient(circle at 30% 25%,#fff 0 9%,#fff9 10% 18%,#ffd2a5 19% 60%,#f2a55e 61%)}
+.history{text-align:center;margin-top:10px}.history h2{font-size:1.15rem;margin:7px}
+.drawn{display:flex;justify-content:center;flex-wrap:wrap;gap:7px;min-height:40px}
+.chip{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;border:2px solid #9bb9e9;background:#eef4ff}
+.chip.lower{border-color:#eeb475;background:#fff0df}
+.notice{text-align:center;color:#66758a;font-size:.9rem;margin-top:7px}
+.empty{grid-column:1/-1;text-align:center;color:#68778d;padding:16px;font-weight:bold}
+@media(max-width:800px){.cageArea{flex-direction:column;gap:25px}.crank{right:-58px}.cage{transform:scale(.9)}}
+</style>
+</head>
+<body>
+<header>
+<h1>🎱 Letter Lottery Machine 🎱</h1>
+<div class="sub">Give the old-fashioned lottery cage a spin and pull a letter!</div>
+</header>
+
+<div class="controls">
+<button id="keep" class="active">Keep Letters on Screen</button>
+<button id="hide">Hide Drawn Letters</button>
+<button id="draw" class="draw">🎱 TURN THE CRANK & DRAW!</button>
+<button id="reset" class="reset">↻ Reset</button>
+</div>
+
+<div class="machine">
+<div class="cageArea">
+<div class="cage" id="cage">
+<div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+<div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+<div class="inner" id="inner"></div><div class="crank"></div>
+</div>
+<div class="pick">
+<div class="result" id="result">?</div>
+<div class="prompt" id="prompt">Ready to draw!</div>
+</div>
+</div>
+
+<div class="pool" id="pool"></div>
+<div class="history"><h2>Letters Drawn</h2><div class="drawn" id="drawn"></div></div>
+<div class="notice">Blue = uppercase • Orange = lowercase • 52 total letter balls</div>
+</div>
+
+<script>
+const U=[..."ABCDEFGHIJKLMNOPQRSTUVWXYZ"], L=[..."abcdefghijklmnopqrstuvwxyz"];
+let pool=[],drawn=[],keep=true;
+const $=id=>document.getElementById(id);
+function resetPool(){pool=[];U.forEach(x=>pool.push({letter:x,lower:false}));L.forEach(x=>pool.push({letter:x,lower:true}))}
+function render(){
+  $("pool").innerHTML="";
+  if(keep){pool.forEach(o=>{let b=document.createElement("div");b.className="poolBall "+(o.lower?"orange":"blue");b.textContent=o.letter;$("pool").appendChild(b)})}
+  else $("pool").innerHTML='<div class="empty">🎱 Drawn balls disappear from the machine.</div>';
+  $("inner").innerHTML="";
+  pool.slice(0,8).forEach((o,i)=>{let b=document.createElement("div");b.className="mini "+(o.lower?"lower":"")+" m"+(i+1);b.textContent=o.letter;$("inner").appendChild(b)});
+  $("drawn").innerHTML="";
+  drawn.forEach(o=>{let c=document.createElement("div");c.className="chip "+(o.lower?"lower":"");c.textContent=o.letter;$("drawn").appendChild(c)})
+}
+function draw(){
+  if(!pool.length){$("prompt").textContent="🎉 All 52 letter balls have been drawn!";return}
+  $("draw").disabled=true;$("cage").classList.add("spinning");
+  $("result").className="result shake";$("result").textContent="";$("prompt").textContent="Turning the cage...";
+  setTimeout(()=>{
+    $("cage").classList.remove("spinning");
+    const i=Math.floor(Math.random()*pool.length),o=pool.splice(i,1)[0];drawn.push(o);
+    $("result").className="result "+(o.lower?"lower":"");$("result").textContent=o.letter;
+    $("prompt").textContent=o.lower?"Lowercase letter!":"Uppercase letter!";
+    render();$("draw").disabled=false;
+  },900)
+}
+$("keep").onclick=()=>{keep=true;$("keep").classList.add("active");$("hide").classList.remove("active");render()}
+$("hide").onclick=()=>{keep=false;$("hide").classList.add("active");$("keep").classList.remove("active");render()}
+$("draw").onclick=draw;
+$("reset").onclick=()=>{resetPool();drawn=[];$("result").className="result";$("result").textContent="?";$("prompt").textContent="Ready to draw!";render()}
+resetPool();render();
+</script>
+</body>
+</html>
