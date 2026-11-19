@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Space Spotters! Find the Spaces</title>
+<style>
+:root{--ink:#28445d;--blue:#287d9f;--pale:#eaf8ff;--mint:#dcf8e7;--gold:#ffdf78;--coral:#ffe7e1}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;padding:16px;font-family:"Trebuchet MS",Arial,sans-serif;color:var(--ink);background:linear-gradient(140deg,#e6f8ff,#f7efff 58%,#fff5df)}
+.app{width:min(1000px,100%);margin:auto}
+header{text-align:center;margin:2px 0 16px}
+h1{margin:0;color:var(--blue);font-size:clamp(2rem,5vw,3.1rem)}
+.subtitle{margin:6px 0 0;font-size:clamp(1rem,2.2vw,1.2rem);font-weight:800}
+.status{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.progressbox{flex:1;background:#fff;border:2px solid #d3ebf4;border-radius:16px;padding:8px 12px}
+.progresslabels{display:flex;justify-content:space-between;font-weight:900;font-size:.95rem;margin-bottom:6px}
+.track{height:13px;background:#e8f0f4;border-radius:20px;overflow:hidden}
+.fill{height:100%;width:0;background:linear-gradient(90deg,#6bc9e0,#80d7a6);transition:width .2s}
+.stars{white-space:nowrap;padding:11px 14px;border-radius:15px;background:#fff0bb;border:2px solid #f1d77e;font-weight:1000}
+.panel{background:#ffffffed;border:3px solid #d2eaf2;border-radius:26px;padding:clamp(15px,3vw,28px);box-shadow:0 10px 26px #4d93aa20}
+.prompt{text-align:center;margin-bottom:18px}
+.mascot{font-size:3rem;line-height:1.1}
+.prompt h2{font-size:clamp(1.35rem,3vw,1.9rem);margin:5px 0;color:#345b78}
+.prompt p{margin:0;font-weight:700;color:#5e788c}
+.choices{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.choice{min-height:150px;padding:18px 14px;border:4px solid #d2e6ed;border-radius:22px;background:white;color:var(--ink);font-family:inherit;cursor:pointer;box-shadow:0 5px 0 #d7e9ee;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;transition:transform .12s,border-color .12s}
+.choice:hover:not(:disabled){transform:translateY(-3px);border-color:#80cde0}
+.choice:focus-visible{outline:4px solid #f6c94b;outline-offset:3px}
+.choice:disabled{cursor:default}
+.choice .label{font-weight:1000;font-size:.88rem;letter-spacing:.08em;text-transform:uppercase;color:#7893a2}
+.sentence{font-size:clamp(1.15rem,2.7vw,1.9rem);font-weight:900;line-height:1.4;text-align:center;overflow-wrap:anywhere}
+.choice.correct{border-color:#63c68c;background:#f0fff5;box-shadow:0 5px 0 #c7ead4}
+.choice.wrong{border-color:#f0a99a;background:#fff5f2;animation:nudge .25s ease}
+@keyframes nudge{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.feedback{min-height:64px;margin-top:17px;padding:13px 16px;border-radius:16px;background:#f1f7fa;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:900;font-size:clamp(1rem,2vw,1.15rem);color:#46687c}
+.feedback.good{background:#edfff3;color:#267448}
+.feedback.try{background:#fff7e8;color:#876321}
+.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:16px}
+.btn{border:0;border-radius:15px;padding:12px 22px;font:inherit;font-weight:1000;cursor:pointer;background:var(--gold);color:#594a16;box-shadow:0 4px 0 #ddc76c}
+.btn.secondary{background:#eff5f8;color:#486679;box-shadow:0 4px 0 #d5e2e8}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.rule{text-align:center;margin:15px 0 0;color:#668092;font-size:.95rem;font-weight:700}
+.finish{text-align:center;padding:25px 10px}
+.finish .big{font-size:4rem}
+.finish h2{font-size:2rem;margin:8px}
+.finish p{font-size:1.1rem;font-weight:800}
+@media(max-width:650px){body{padding:9px}.choices{grid-template-columns:1fr;gap:12px}.choice{min-height:108px;padding:12px}.panel{border-radius:20px}.status{gap:7px}.stars{padding:9px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <h1>🌟 Space Spotters! 🌟</h1>
+  <div class="subtitle">Find the sentence with spaces between the words!</div>
+</header>
+<div class="status" id="status">
+  <div class="progressbox">
+    <div class="progresslabels"><span>Sentence <span id="turn">1</span> of 20</span><span id="completed">0 completed</span></div>
+    <div class="track"><div class="fill" id="bar"></div></div>
+  </div>
+  <div class="stars">⭐ <span id="starCount">0</span> / 20</div>
+</div>
+<main class="panel" id="panel">
+  <div class="prompt">
+    <div class="mascot">🕵️‍♀️🔎</div>
+    <h2>Which sentence is easier to read?</h2>
+    <p>Choose the sentence where you can see a space between each word.</p>
+  </div>
+  <div class="choices">
+    <button class="choice" id="choiceA" type="button"><span class="label">Choice A</span><span class="sentence" id="textA"></span></button>
+    <button class="choice" id="choiceB" type="button"><span class="label">Choice B</span><span class="sentence" id="textB"></span></button>
+  </div>
+  <div class="feedback" id="feedback" aria-live="polite">Look carefully. Can you spot the spaces?</div>
+  <div class="actions">
+    <button class="btn" id="next" type="button" disabled>Next sentence →</button>
+    <button class="btn secondary" id="restart" type="button">↻ Start over</button>
+  </div>
+  <div class="rule">Remember: Spaces are the little gaps that show where one word ends and the next word begins.</div>
+</main>
+</div>
+<script>
+const PAIRS = [{"spaced": "I like the cat.", "unspaced": "Ilikethecat."}, {"spaced": "The dog is wet.", "unspaced": "Thedogiswet."}, {"spaced": "I get a red hat.", "unspaced": "Igetaredhat."}, {"spaced": "The pig was sad.", "unspaced": "Thepigwassad."}, {"spaced": "I want the big hat.", "unspaced": "Iwantthebighat."}, {"spaced": "The hen is hot.", "unspaced": "Thehenishot."}, {"spaced": "I will get the cup.", "unspaced": "Iwillgetthecup."}, {"spaced": "A bug is on the bed.", "unspaced": "Abugisonthebed."}, {"spaced": "The man had a map.", "unspaced": "Themanhadamap."}, {"spaced": "The cat and the dog sat.", "unspaced": "Thecatandthedogsat."}, {"spaced": "The dog is wet with mud.", "unspaced": "Thedogiswetwithmud."}, {"spaced": "The ham is for the man.", "unspaced": "Thehamisfortheman."}, {"spaced": "The lid of the pot is hot.", "unspaced": "Thelidofthepotishot."}, {"spaced": "I like the sun.", "unspaced": "Ilikethesun."}, {"spaced": "The fox was wet.", "unspaced": "Thefoxwaswet."}, {"spaced": "I get the jam.", "unspaced": "Igetthejam."}, {"spaced": "The red hen is sad.", "unspaced": "Theredhenissad."}, {"spaced": "I will go to the vet.", "unspaced": "Iwillgotothevet."}, {"spaced": "You will get a red cap.", "unspaced": "Youwillgetaredcap."}, {"spaced": "I said no to the dog.", "unspaced": "Isaidnotothedog."}];
+let order=[],turn=0,stars=0,answered=false,correctSide="A";
+const el=id=>document.getElementById(id);
+function shuffle(list){
+  const a=list.slice();
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+function updateStatus(){
+  el("turn").textContent=Math.min(turn+1,20);
+  el("completed").textContent=turn+" completed";
+  el("bar").style.width=(turn/20*100)+"%";
+  el("starCount").textContent=stars;
+}
+function renderTurn(){
+  answered=false;
+  const pair=PAIRS[order[turn]];
+  const spacedOnA=Math.random()<0.5;
+  correctSide=spacedOnA?"A":"B";
+  el("textA").textContent=spacedOnA?pair.spaced:pair.unspaced;
+  el("textB").textContent=spacedOnA?pair.unspaced:pair.spaced;
+  ["A","B"].forEach(side=>{
+    const b=el("choice"+side);
+    b.disabled=false;b.className="choice";
+  });
+  el("feedback").className="feedback";
+  el("feedback").textContent="Look carefully. Can you spot the spaces?";
+  el("next").disabled=true;
+  el("next").textContent=turn===19?"See my finish page! →":"Next sentence →";
+  updateStatus();
+}
+function choose(side){
+  if(answered)return;
+  const button=el("choice"+side);
+  if(side!==correctSide){
+    button.classList.add("wrong");
+    el("feedback").className="feedback try";
+    el("feedback").textContent="Good looking! Try again. Find the sentence with little gaps between the words.";
+    setTimeout(()=>button.classList.remove("wrong"),400);
+    return;
+  }
+  answered=true;stars++;
+  button.classList.add("correct");
+  el("choiceA").disabled=true;el("choiceB").disabled=true;
+  el("feedback").className="feedback good";
+  el("feedback").textContent="⭐ You found the spaces! Spaces show where each word begins and ends.";
+  el("next").disabled=false;
+  updateStatus();
+}
+function finish(){
+  el("status").style.display="none";
+  el("panel").innerHTML=`
+    <div class="finish">
+      <div class="big">🎉🌟🎉</div>
+      <h2>You are a Space Spotter!</h2>
+      <p>You finished all 20 sentences and found the ones with spaces.</p>
+      <p>⭐ Sentences found: ${stars} out of 20</p>
+      <p>Spaces separate words in print!</p>
+      <button class="btn" id="playAgain" type="button">↻ Play again</button>
+    </div>`;
+  el("playAgain").addEventListener("click",startGame);
+}
+function nextTurn(){
+  if(!answered)return;
+  turn++;
+  if(turn===20){finish();return;}
+  renderTurn();
+}
+function startGame(){
+  el("status").style.display="flex";
+  el("panel").innerHTML=`
+    <div class="prompt">
+      <div class="mascot">🕵️‍♀️🔎</div>
+      <h2>Which sentence is easier to read?</h2>
+      <p>Choose the sentence where you can see a space between each word.</p>
+    </div>
+    <div class="choices">
+      <button class="choice" id="choiceA" type="button"><span class="label">Choice A</span><span class="sentence" id="textA"></span></button>
+      <button class="choice" id="choiceB" type="button"><span class="label">Choice B</span><span class="sentence" id="textB"></span></button>
+    </div>
+    <div class="feedback" id="feedback" aria-live="polite">Look carefully. Can you spot the spaces?</div>
+    <div class="actions">
+      <button class="btn" id="next" type="button" disabled>Next sentence →</button>
+      <button class="btn secondary" id="restart" type="button">↻ Start over</button>
+    </div>
+    <div class="rule">Remember: Spaces are the little gaps that show where one word ends and the next word begins.</div>`;
+  order=shuffle(PAIRS.map((_,i)=>i));turn=0;stars=0;answered=false;
+  el("choiceA").addEventListener("click",()=>choose("A"));
+  el("choiceB").addEventListener("click",()=>choose("B"));
+  el("next").addEventListener("click",nextTurn);
+  el("restart").addEventListener("click",startGame);
+  renderTurn();
+}
+startGame();
+</script>
+</body>
+</html>
