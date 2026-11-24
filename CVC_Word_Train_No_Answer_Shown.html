@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>cvc word train</title>
+<style>
+:root{--ink:#25445d;--gold:#ffdc70}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;padding:14px;font-family:"Trebuchet MS",Arial,sans-serif;color:var(--ink);background:linear-gradient(145deg,#e6f8ff,#f8f0ff 55%,#fff5df)}
+.app{width:min(1120px,100%);margin:auto}
+header{text-align:center;margin-bottom:12px}
+h1{font-size:clamp(2rem,5vw,3.1rem);margin:0;color:#26799d}
+.subtitle{font-size:clamp(1rem,2vw,1.18rem);font-weight:800;margin:4px 0 0}
+.topbar{display:flex;align-items:center;gap:12px;margin:12px 0}
+.progressbox{flex:1;background:#fff;border:2px solid #d2eaf2;border-radius:16px;padding:8px 12px}
+.progresslabels{display:flex;justify-content:space-between;gap:8px;font-weight:900;font-size:.95rem;margin-bottom:6px}
+.track{height:12px;background:#e7f0f4;border-radius:15px;overflow:hidden}
+.fill{height:100%;width:0;background:linear-gradient(90deg,#66c9e0,#86d59a);transition:width .25s}
+.score{background:#fff0bb;border:2px solid #efd77b;border-radius:15px;padding:10px 14px;font-weight:1000;white-space:nowrap}
+.panel{background:#ffffffed;border:3px solid #d2eaf2;border-radius:26px;padding:clamp(14px,2.5vw,24px);box-shadow:0 10px 26px #4d93aa20}
+.task{text-align:center}
+.small{font-weight:900;color:#6a8495;font-size:.95rem}
+.targetword{display:inline-block;margin:4px 0 2px;padding:4px 24px;border:3px dashed #efc75a;border-radius:18px;background:#fff8d8;color:#23465e;font-size:clamp(2.4rem,6vw,4.2rem);font-weight:1000;letter-spacing:.12em}
+.instruction{font-size:clamp(1rem,2vw,1.2rem);font-weight:800;margin:3px 0 10px}
+.smallbtn{border:0;border-radius:12px;padding:8px 13px;font:inherit;font-weight:900;cursor:pointer;background:#eef6fa;color:#3b647a;box-shadow:0 3px 0 #d4e3e9}
+.train-area{position:relative;margin:10px auto 14px;padding:16px 4px 22px}
+.trackline{height:11px;background:repeating-linear-gradient(90deg,#697c88 0 35px,#d9e1e5 35px 48px);border-radius:10px;position:absolute;left:2%;right:2%;bottom:8px}
+.train{display:flex;align-items:flex-end;justify-content:center;gap:9px;position:relative;z-index:1;min-height:154px}
+.engine{width:120px;height:112px;position:relative;flex:0 1 120px}
+.enginebody{position:absolute;left:3px;bottom:16px;width:105px;height:69px;border-radius:18px 17px 8px 8px;background:linear-gradient(#f6a35f,#e77751);border:4px solid #a95140}
+.enginebody:before{content:"";position:absolute;left:18px;top:-30px;width:31px;height:32px;border:4px solid #a95140;border-radius:9px 9px 0 0;background:#f7d16a}
+.enginebody:after{content:"";position:absolute;right:13px;top:12px;width:38px;height:30px;border-radius:50%;background:#d8f3ff;border:4px solid #a95140}
+.smokestack{position:absolute;left:25px;top:3px;width:23px;height:31px;background:#3d82ad;border:4px solid #245673;border-radius:6px 6px 0 0}
+.smoke{position:absolute;left:10px;top:-12px;font-size:26px;animation:smoke 2s ease-in-out infinite}
+@keyframes smoke{50%{transform:translateY(-7px);opacity:.5}}
+.wheel{position:absolute;bottom:0;width:30px;height:30px;background:#46576a;border:5px solid #b5c2cb;border-radius:50%}
+.wheel.one{left:12px}.wheel.two{right:12px}
+.car{width:clamp(82px,14vw,130px);height:114px;border-radius:12px 12px 20px 20px;border:4px solid #42627a;position:relative;display:flex;align-items:center;justify-content:center;flex:0 1 130px;box-shadow:inset 0 -10px 0 #00000010}
+.car:nth-child(2){background:#8fd6a8}.car:nth-child(3){background:#8ccfed}.car:nth-child(4){background:#b5a4ed}
+.car:before{content:"";position:absolute;left:-12px;top:56px;width:12px;height:10px;background:#657b8a}
+.carlabel{position:absolute;top:7px;left:0;right:0;text-align:center;font-size:11px;font-weight:1000;color:#315267;text-transform:uppercase;letter-spacing:.08em}
+.slot{width:70%;height:65px;border-radius:12px;border:3px dashed #fff;background:#ffffffc9;display:flex;align-items:center;justify-content:center;font-size:clamp(2rem,4vw,3rem);font-weight:1000;color:#244b63;cursor:pointer;z-index:2}
+.slot.active{outline:5px solid #ffda63;outline-offset:2px;background:#fff9d9}
+.slot.filled{border-style:solid}
+.slot:focus-visible,.letter:focus-visible{outline:4px solid #ffdb62;outline-offset:2px}
+.train.correct .engine,.train.correct .car{animation:bounce .42s ease 2}
+@keyframes bounce{50%{transform:translateY(-12px)}}
+.wheels{position:absolute;bottom:-15px;left:10%;right:10%;display:flex;justify-content:space-around;pointer-events:none}
+.wheels i{width:24px;height:24px;border-radius:50%;background:#526579;border:4px solid #b8c6d0}
+.banktitle{text-align:center;font-weight:1000;color:#41647a;margin:6px 0 8px;font-size:1.05rem}
+.alphabet{display:grid;grid-template-columns:repeat(13,1fr);gap:6px;max-width:900px;margin:0 auto}
+.letter{height:52px;border:2px solid #c9e3ec;border-radius:12px;background:#fff;font-size:clamp(1.15rem,2.6vw,1.7rem);font-weight:1000;color:#31566e;cursor:pointer;box-shadow:0 3px 0 #d9e9ed}
+.letter:hover{background:#effbff;transform:translateY(-2px)}
+.letter:disabled{opacity:.35;cursor:not-allowed}
+.message{min-height:46px;margin:14px 0 5px;padding:10px 14px;border-radius:15px;text-align:center;display:flex;align-items:center;justify-content:center;font-size:1.06rem;font-weight:900;background:#f1f7fa;color:#46687b}
+.message.good{background:#edfff2;color:#287549}
+.message.try{background:#fff5e8;color:#8a6120}
+.actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+.action{border:0;border-radius:14px;padding:12px 20px;font:inherit;font-weight:1000;cursor:pointer;background:var(--gold);color:#584a16;box-shadow:0 4px 0 #ddc66b}
+.action.secondary{background:#eff5f8;color:#466579;box-shadow:0 4px 0 #d4e2e8}
+.action:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+.tip{text-align:center;color:#6a8495;font-size:.9rem;font-weight:700;margin-top:12px}
+.finish{text-align:center;padding:25px 10px}
+.finish .big{font-size:4rem}.finish h2{margin:8px 0;font-size:2rem}.finish p{font-weight:800;font-size:1.1rem}
+@media(max-width:700px){body{padding:8px}.topbar{gap:7px}.score{padding:8px}.panel{padding:12px;border-radius:19px}.train{gap:5px;min-height:122px}.engine{transform:scale(.78);transform-origin:bottom left;width:85px}.car{height:92px;flex-basis:27%;min-width:0}.slot{height:53px}.alphabet{grid-template-columns:repeat(7,1fr);gap:5px}.letter{height:43px}.carlabel{font-size:9px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><h1>🚂 cvc word train</h1><div class="subtitle">Build the word, one letter at a time!</div></header>
+<div class="topbar" id="topbar">
+<div class="progressbox"><div class="progresslabels"><span>Word <span id="wordNumber">1</span> of 185</span><span id="doneLabel">0 built</span></div><div class="track"><div class="fill" id="progressFill"></div></div></div>
+<div class="score">⭐ <span id="score">0</span></div>
+</div>
+<main class="panel" id="panel"></main>
+</div>
+<script>
+const WORDS = ["bad", "bag", "ban", "bat", "cab", "can", "cap", "cat", "dad", "dab", "dam", "fan", "fat", "gap", "gas", "had", "ham", "hat", "jam", "lad", "lag", "lap", "mad", "man", "map", "mat", "nag", "nap", "pad", "pal", "pan", "pat", "rag", "ram", "ran", "rap", "rat", "sad", "sag", "sap", "sat", "tab", "tad", "tag", "tan", "tap", "van", "vat", "wag", "yam", "yap", "zap", "bed", "beg", "bet", "den", "fed", "gem", "get", "hem", "hen", "jet", "leg", "let", "men", "met", "net", "peg", "pen", "pet", "red", "set", "ten", "vet", "web", "wed", "wet", "yes", "yet", "bib", "bid", "big", "bin", "bit", "did", "dig", "dim", "dip", "fib", "fig", "fin", "fit", "hid", "hip", "him", "hit", "jig", "kid", "kin", "kit", "lid", "lip", "lit", "nip", "pig", "pin", "pit", "rib", "rid", "rig", "rim", "rip", "sip", "sit", "tin", "tip", "wig", "win", "wit", "zip", "yip", "bob", "bog", "bop", "cob", "cod", "cog", "cop", "cot", "dot", "dog", "fog", "got", "hog", "hop", "hot", "job", "jog", "lob", "log", "lot", "mob", "mop", "nod", "not", "pod", "pop", "pot", "rob", "rod", "rot", "sob", "top", "tot", "bud", "bug", "bun", "bus", "but", "cub", "cup", "cut", "dug", "fun", "gum", "gut", "hub", "hug", "hum", "hut", "jug", "mud", "mug", "mum", "nut", "pup", "pug", "rub", "rug", "run", "sub", "sum", "sun", "tub", "tug"];
+const ALPHABET = "abcdefghijklmnopqrstuvwxyz".split("");
+let deck=[],deckIndex=0,score=0,target="",slots=["","",""],activeSlot=0,solved=false;
+const $=id=>document.getElementById(id);
+function shuffle(arr){const a=arr.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function updateStatus(){$("wordNumber").textContent=Math.min(deckIndex+1,WORDS.length);$("doneLabel").textContent=score+" built";$("score").textContent=score;$("progressFill").style.width=(score/WORDS.length*100)+"%";}
+function renderSlots(){document.querySelectorAll(".slot").forEach((b,i)=>{b.textContent=slots[i]||"_";b.classList.toggle("active",i===activeSlot&&!solved);b.classList.toggle("filled",Boolean(slots[i]));b.disabled=solved;});}
+function renderLetters(){const bank=$("alphabet");bank.innerHTML="";ALPHABET.forEach(letter=>{const b=document.createElement("button");b.type="button";b.className="letter";b.textContent=letter;b.setAttribute("aria-label","letter "+letter);b.disabled=solved;b.addEventListener("click",()=>placeLetter(letter));bank.appendChild(b);});}
+function chooseSlot(i){if(solved)return;activeSlot=i;renderSlots();$("message").className="message";$("message").textContent="Choose a lowercase letter for the "+["first","middle","last"][i]+" sound.";}
+function placeLetter(letter){if(solved)return;slots[activeSlot]=letter;let next=slots.findIndex((s,i)=>i>activeSlot&&!s);if(next<0&&slots.some(s=>!s))next=slots.findIndex(s=>!s);activeSlot=next<0?2:next;renderSlots();$("message").className="message";$("message").textContent=slots.every(Boolean)?"All aboard! Check your word.":"Good choice! Pick the next letter.";}
+function speak(word){if(!("speechSynthesis" in window)){$("message").textContent="Sound playback is not available in this browser.";return;}window.speechSynthesis.cancel();const utter=new SpeechSynthesisUtterance(word);utter.rate=.82;utter.pitch=1.05;window.speechSynthesis.speak(utter);}
+function panelMarkup(){return `
+<section class="task"><div class="small">listen carefully to your word:</div><div class="targetword" id="targetWord">???</div><div class="instruction">Click a train car, then choose its lowercase letter.</div><button class="smallbtn" id="listen" type="button">🔊 Hear the word</button></section>
+<section class="train-area"><div class="train" id="train"><div class="engine"><div class="smoke">☁️</div><div class="smokestack"></div><div class="enginebody"></div><div class="wheel one"></div><div class="wheel two"></div></div>
+<div class="car"><div class="carlabel">first sound</div><button class="slot active" data-slot="0" type="button">_</button><div class="wheels"><i></i><i></i></div></div>
+<div class="car"><div class="carlabel">middle sound</div><button class="slot" data-slot="1" type="button">_</button><div class="wheels"><i></i><i></i></div></div>
+<div class="car"><div class="carlabel">last sound</div><button class="slot" data-slot="2" type="button">_</button><div class="wheels"><i></i><i></i></div></div></div><div class="trackline"></div></section>
+<div class="banktitle">🔤 choose from all 26 lowercase letters</div><div class="alphabet" id="alphabet"></div>
+<div class="message" id="message" aria-live="polite">Let's build a word!</div>
+<div class="actions"><button class="action" id="check" type="button">✓ Check my word</button><button class="action secondary" id="clear" type="button">↶ Clear train</button><button class="action" id="next" type="button" disabled>Next word →</button></div>
+<div class="tip">You can change a letter by clicking its train car and choosing a different letter.</div>`;}
+function renderWord(){target=deck[deckIndex];slots=["","",""];activeSlot=0;solved=false;$("targetWord").textContent="???";$("check").disabled=false;$("next").disabled=true;$("train").classList.remove("correct");$("message").className="message";$("message").textContent="Listen to the word, then build it!";renderSlots();renderLetters();updateStatus();}
+function checkWord(){if(solved)return;if(slots.some(s=>!s)){$("message").className="message try";$("message").textContent="Fill all three train cars first.";return;}if(slots.join("")===target){solved=true;score++;$("message").className="message good";$("message").textContent="🎉 Choo-choo! You built "+target+"! Say the sounds and blend the word.";$("train").classList.add("correct");$("check").disabled=true;$("next").disabled=false;renderSlots();renderLetters();updateStatus();}else{$("message").className="message try";$("message").textContent="Not quite yet. Say each sound and check your letters. You can change any car!";}}
+function nextWord(){if(!solved)return;deckIndex++;if(deckIndex>=deck.length){showFinish();return;}renderWord();}
+function showFinish(){$("topbar").style.display="none";$("panel").innerHTML=`<div class="finish"><div class="big">🚂🎉🚂</div><h2>All words are built!</h2><p>You built ${score} cvc words!</p><p>Wonderful word work!</p><button class="action" id="playAgain" type="button">↻ Play all the words again</button></div>`;$("playAgain").addEventListener("click",startGame);}
+function startGame(){$("topbar").style.display="flex";$("panel").innerHTML=panelMarkup();$("listen").addEventListener("click",()=>speak(target));document.querySelectorAll(".slot").forEach(b=>b.addEventListener("click",()=>chooseSlot(Number(b.dataset.slot))));$("check").addEventListener("click",checkWord);$("clear").addEventListener("click",()=>{if(solved)return;slots=["","",""];activeSlot=0;renderSlots();$("message").className="message";$("message").textContent="Train cleared. Choose the first letter.";});$("next").addEventListener("click",nextWord);deck=WORDS.slice();deckIndex=0;score=0;renderWord();}
+startGame();
+</script>
+</body>
+</html>
